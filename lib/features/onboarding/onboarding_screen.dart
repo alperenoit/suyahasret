@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suyahasret/features/onboarding/user_provider.dart';
-// Not: İleride home_screen.dart oluşturduğumuzda buraya import edeceğiz.
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -17,7 +16,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   void dispose() {
-    // Memory leak (bellek sızıntısı) önlemek için controller'ları dispose ediyoruz
     _nameController.dispose();
     _surnameController.dispose();
     super.dispose();
@@ -25,7 +23,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      // Form geçerliyse Riverpod provider'ımıza verileri kaydediyoruz
       ref
           .read(userProvider.notifier)
           .saveUser(
@@ -33,7 +30,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             _surnameController.text.trim(),
           );
 
-      // TODO: Burada Navigator ile Ana Ekrana (HomeScreen) yönlendirme yapacağız.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Hoş geldin, ${_nameController.text}!'),
@@ -46,9 +42,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(
-        0xfff4f9f9,
-      ), // Su temasına uygun çok açık soft bir arka plan
+      // ÇÖZÜM 1: Sabit açık renk arka planı sildik.
+      // Artık otomatik olarak main.dart'taki koyu temayı çekecek.
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -59,7 +54,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Su Damlası veya Uygulama Logosu Alanı
                   const Icon(
                     Icons.water_drop,
                     size: 100,
@@ -72,28 +66,45 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xff1a3e5c),
+                      color: Colors.white, // ÇÖZÜM 2: Yazıyı beyaz yaptık
                     ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
                     "Verimli çalışın, dehidre kalmayın.",
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 15, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors
+                          .white60, // ÇÖZÜM 3: Alt başlığı hafif şeffaf beyaz yaptık
+                    ),
                   ),
                   const SizedBox(height: 40),
 
                   // Ad Giriş Alanı
                   TextFormField(
                     controller: _nameController,
+                    style: const TextStyle(
+                      color: Colors.white,
+                    ), // Giriş yapılan yazı rengi
                     decoration: InputDecoration(
                       labelText: 'Adınız',
-                      prefixIcon: const Icon(Icons.person_outline),
+                      labelStyle: const TextStyle(color: Colors.white60),
+                      prefixIcon: const Icon(
+                        Icons.person_outline,
+                        color: Colors.white60,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white24),
+                      ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: const Color(
+                        0xff1C2541,
+                      ), // ÇÖZÜM 4: Giriş kutusunu koyu mavi/gri yaptık
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
@@ -107,14 +118,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   // Soyad Giriş Alanı
                   TextFormField(
                     controller: _surnameController,
+                    style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       labelText: 'Soyadınız',
-                      prefixIcon: const Icon(Icons.person_outline),
+                      labelStyle: const TextStyle(color: Colors.white60),
+                      prefixIcon: const Icon(
+                        Icons.person_outline,
+                        color: Colors.white60,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.white24),
+                      ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: const Color(0xff1C2541),
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {

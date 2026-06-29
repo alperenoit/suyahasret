@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suyahasret/features/onboarding/onboarding_screen.dart';
 import 'package:suyahasret/features/onboarding/user_provider.dart';
+import 'package:suyahasret/features/main_navigation_screen.dart';
 
 void main() {
   // Riverpod'un çalışabilmesi için tüm uygulamayı ProviderScope ile sarmallıyoruz.
@@ -13,71 +14,36 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Kullanıcı durumunu anlık olarak izliyoruz
+    // Kullanıcı durumunu anlık
     final userProfile = ref.watch(userProvider);
 
     return MaterialApp(
       title: 'Suya Hasret',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xff0B132B),
+        colorScheme: const ColorScheme.dark(
+          primary: Colors.blueAccent,
+          surface: Color(0xff1C2541), // Kartların ve kutuların rengi
+          onSurface: Colors.white, // Kartların üzerindeki yazı rengi
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          foregroundColor: Colors.white, // AppBar yazı rengi
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Color(0xff0B132B),
+          selectedItemColor: Colors.blueAccent,
+          unselectedItemColor: Colors.white54,
+        ),
         useMaterial3: true,
       ),
-      // Eğer kullanıcı onboard aşamasını geçtiyse ana ekrana, geçmediyse onboarding'e yönlendiriyoruz
+      // Kullanıcı onboard aşamasını geçtiyse ana ekrana, geçmediyse onboarding'e
       home: userProfile.isOnboarded
-          ? const TestHomeScreen()
+          ? const MainNavigationScreen()
           : const OnboardingScreen(),
-    );
-  }
-}
-
-/// Test amacıyla oluşturulmuş geçici Ana Ekran.
-/// Onboarding başarıyla tamamlandığında bu ekran otomatik olarak açılacaktır.
-class TestHomeScreen extends ConsumerWidget {
-  const TestHomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Ana ekrandan da kullanıcı bilgilerine erişiyoruz
-    final userProfile = ref.watch(userProvider);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Suya Hasret'),
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.check_circle_outline,
-                size: 80,
-                color: Colors.green,
-              ),
-              const SizedBox(height: 20),
-              // Özellik 4: Dinamik karşılama metni
-              Text(
-                'Merhaba ${userProfile.name} ${userProfile.surname}!',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Onboarding akışı başarıyla test edildi. Durum (State) Riverpod ile başarıyla yönetiliyor.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
