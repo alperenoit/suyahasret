@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:suyahasret/features/onboarding/user_provider.dart';
+import 'package:suyahasret/features/timer/timer_provider.dart'; // Yeni yazdığımız provider
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -11,17 +12,30 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  // TODO: İleride bu değerleri Riverpod üzerinden canlı timer'a bağlayacağız
-  final double _progress = 0.65;
-  final String _timeLeft = "26:14";
-  final String _currentBlock = "1. Ders";
+  // Saniyeyi "MM:SS" formatına çeviren yardımcı fonksiyon
+  String _formatDuration(int totalSeconds) {
+    int minutes = totalSeconds ~/ 60;
+    int seconds = totalSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
     final userProfile = ref.watch(userProvider);
 
+    // Timer verilerini Riverpod'dan anlık olarak dinliyoruz
+    final timerState = ref.watch(timerProvider);
+    final timerNotifier = ref.read(timerProvider.notifier);
+
+    // Çemberin doluluk oranını hesaplıyoruz
+    double progress = timerState.totalSeconds > 0
+        ? (timerState.remainingSeconds / timerState.totalSeconds).clamp(
+            0.0,
+            1.0,
+          )
+        : 0.0;
+
     return Scaffold(
-      // ÇÖZÜM 1: Klavye açıldığında ekranın sıkışmasını/taşmasını engeller
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -29,7 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: Text(
           'Merhaba ${userProfile.name} 👋',
           style: const TextStyle(
-            color: Colors.white, // Karanlık temaya uygun
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
@@ -37,13 +51,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.blueAccent),
-            onPressed: () {
-              // Ayarlar sayfasına gidecek
-            },
+            onPressed: () {},
           ),
         ],
       ),
-      // ÇÖZÜM 2: Küçük ekranlarda taşmayı önlemek için kaydırılabilir alan eklendi
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
         child: Column(
@@ -53,13 +64,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xff1C2541), // Karanlık tema kart rengi
+                color: const Color(0xff1C2541),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(
-                      0.2,
-                    ), // Gölgeler siyah yapıldı
+                    color: Colors.black.withOpacity(0.2),
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -77,7 +86,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        "3 Saat 45 Dk",
+                        "0 Saat 0 Dk",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -91,20 +100,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
 
-            const SizedBox(
-              height: 40,
-            ), // ÇÖZÜM 3: Hata veren Spacer() yerine sabit boşluk
-            // Devasa Odaklanma Sayacı
+            const SizedBox(height: 40),
+
+            // Devasa Odaklanma Sayacı (Artık Canlı!)
             CircularPercentIndicator(
               radius: 140.0,
               lineWidth: 18.0,
               animation: true,
-              percent: _progress,
+              animateFromLastPercent: true, // Geçişlerde yumuşaklık sağlar
+              percent: progress,
               center: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    _currentBlock,
+                    timerState
+                        .currentPhase, // "1. Ders" veya "Teneffüs" yazısı provider'dan geliyor
                     style: const TextStyle(
                       fontSize: 18,
                       color: Colors.white60,
@@ -113,7 +123,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _timeLeft,
+                    _formatDuration(
+                      timerState.remainingSeconds,
+                    ), // Canlı azalan saat
                     style: const TextStyle(
                       fontSize: 52,
                       fontWeight: FontWeight.bold,
@@ -123,13 +135,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
               circularStrokeCap: CircularStrokeCap.round,
-              progressColor: Colors.blueAccent,
+              progressColor: timerState.currentPhase.contains("Teneffüs")
+                  ? Colors.greenAccent
+                  : Colors.blueAccent, // Teneffüste renk yeşil olacak
               backgroundColor: Colors.blueAccent.withOpacity(0.1),
             ),
 
-            const SizedBox(
-              height: 40,
-            ), // Hata veren Spacer() yerine sabit boşluk
+            const SizedBox(height: 30),
+
+            // Başlat / Duraklat Butonu
+            FloatingActionButton.extended(
+              onPressed: () {
+                if (timerState.isRunning) {
+                  timerNotifier.pause();
+                } else {
+                  timerNotifier.start();
+                }
+              },
+              backgroundColor: timerState.isRunning
+                  ? Colors.orangeAccent
+                  : Colors.blueAccent,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              icon: Icon(timerState.isRunning ? Icons.pause : Icons.play_arrow),
+              label: Text(
+                timerState.isRunning ? "Duraklat" : "Dersi Başlat",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 40),
+
             // Alt Kısım: Su Durumu ve Program Butonları
             Row(
               children: [
@@ -137,11 +176,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: _buildActionCard(
                     context,
                     title: "Su Durumu",
-                    subtitle: "1250 / 2500 ml",
+                    subtitle: "Hızlı Ekle",
                     icon: Icons.water_drop,
                     color: Colors.lightBlue,
                     onTap: () {
-                      // Su ekranına yönlendirme
+                      // BottomNavigationBar ile sekmeler arası geçiş yapılabiliyor zaten,
+                      // İstenirse buraya ekstra bir tıklama animasyonu konabilir.
                     },
                   ),
                 ),
@@ -149,13 +189,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Expanded(
                   child: _buildActionCard(
                     context,
-                    title: "Program",
-                    subtitle: "Hafta Sonu",
+                    title: "Bugünün Akışı",
+                    subtitle: "Programa Göz At",
                     icon: Icons.calendar_month,
                     color: Colors.indigo,
-                    onTap: () {
-                      // Program ayarlama ekranına yönlendirme
-                    },
+                    onTap: () {},
                   ),
                 ),
               ],
@@ -167,7 +205,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // Alt kısımdaki butonları üreten yardımcı widget
+  // Alt kısımdaki butonları üreten yardımcı widget (Değişmedi)
   Widget _buildActionCard(
     BuildContext context, {
     required String title,
@@ -181,14 +219,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xff1C2541), // Karanlık tema kart rengi
+          color: const Color(0xff1C2541),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withOpacity(0.3)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(
-                0.2,
-              ), // Gölgeleri siyah tonuna çektik
+              color: Colors.black.withOpacity(0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
