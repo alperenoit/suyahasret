@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart'; //Hive
 import 'package:suyahasret/features/onboarding/onboarding_screen.dart';
 import 'package:suyahasret/features/onboarding/user_provider.dart';
 import 'package:suyahasret/features/main_navigation_screen.dart';
 
-void main() {
-  // Riverpod'un çalışabilmesi için tüm uygulamayı ProviderScope ile sarmallıyoruz.
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Hive'ı başlatıp, verileri kaydedeceğimiz kutuları (tabloları) açıyoruz
+  await Hive.initFlutter();
+  await Hive.openBox('schedules'); // Programlar için kutu
+  await Hive.openBox('water'); // Su verileri için kutu
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

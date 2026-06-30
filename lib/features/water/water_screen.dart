@@ -152,15 +152,11 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
                   title: "Kupa",
                   icon: Icons.coffee_outlined,
                 ),
-                // Normal İkon yerine SVG kullanmak istediğinde:
-                SvgPicture.asset(
-                  'assets/icons/bottle.svg',
-                  width: 36,
-                  height: 36,
-                  colorFilter: const ColorFilter.mode(
-                    Colors.blueAccent,
-                    BlendMode.srcIn,
-                  ),
+                _buildWaterOption(
+                  context,
+                  ml: 500,
+                  title: "Şişe",
+                  svgPath: 'assets/icons/bottle_outlined.svg',
                 ),
               ],
             ),
@@ -221,7 +217,8 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
     BuildContext context, {
     required int ml,
     required String title,
-    required IconData icon,
+    IconData? icon,
+    String? svgPath,
   }) {
     return InkWell(
       onTap: () {
@@ -232,16 +229,11 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
         width: MediaQuery.of(context).size.width * 0.4,
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.lightBlueAccent.withOpacity(
-            0.1,
-          ), // Kart arka planını koyu temaya uyarladık
+          color: const Color(0xff1C2541),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.lightBlueAccent.withOpacity(0.5)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(
-                0.2,
-              ), // Gölgeleri siyah tonuna çektik
+              color: Colors.black.withOpacity(0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -249,7 +241,18 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 36, color: Colors.lightBlueAccent),
+            // Eğer svgPath doluysa SVG çiz, yoksa normal Icon çiz
+            svgPath != null
+                ? SvgPicture.asset(
+                    svgPath,
+                    width: 36,
+                    height: 36,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.blueAccent,
+                      BlendMode.srcIn,
+                    ),
+                  )
+                : Icon(icon, size: 36, color: Colors.blueAccent),
             const SizedBox(height: 12),
             Text(
               title,

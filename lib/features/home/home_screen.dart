@@ -21,26 +21,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final userProfile = ref.watch(userProvider);
 
     return Scaffold(
+      // ÇÖZÜM 1: Klavye açıldığında ekranın sıkışmasını/taşmasını engeller
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           'Merhaba ${userProfile.name} 👋',
           style: const TextStyle(
-            color: Colors.white,
+            color: Colors.white, // Karanlık temaya uygun
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon: const Icon(Icons.settings, color: Colors.blueAccent),
             onPressed: () {
               // Ayarlar sayfasına gidecek
             },
           ),
         ],
       ),
-      body: Padding(
+      // ÇÖZÜM 2: Küçük ekranlarda taşmayı önlemek için kaydırılabilir alan eklendi
+      body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -49,11 +53,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.lightBlue.withOpacity(0.7),
+                color: const Color(0xff1C2541), // Karanlık tema kart rengi
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.lightBlue.withOpacity(0.2),
+                    color: Colors.black.withOpacity(
+                      0.2,
+                    ), // Gölgeler siyah yapıldı
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -67,11 +73,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     children: [
                       Text(
                         "Bugünkü Toplam Çalışma",
-                        style: TextStyle(color: Colors.white, fontSize: 14),
+                        style: TextStyle(color: Colors.white60, fontSize: 14),
                       ),
                       SizedBox(height: 4),
                       Text(
-                        "0 Saat 0 Dk",
+                        "3 Saat 45 Dk",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -80,14 +86,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ],
                   ),
-                  Icon(Icons.timeline, color: Colors.white, size: 30),
+                  Icon(Icons.timeline, color: Colors.blueAccent, size: 30),
                 ],
               ),
             ),
 
-            const Spacer(),
-
-            // Devasa Odaklanma Sayacı (Özellik 3 ve 5)
+            const SizedBox(
+              height: 40,
+            ), // ÇÖZÜM 3: Hata veren Spacer() yerine sabit boşluk
+            // Devasa Odaklanma Sayacı
             CircularPercentIndicator(
               radius: 140.0,
               lineWidth: 18.0,
@@ -100,7 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     _currentBlock,
                     style: const TextStyle(
                       fontSize: 18,
-                      color: Colors.white,
+                      color: Colors.white60,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -110,18 +117,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     style: const TextStyle(
                       fontSize: 52,
                       fontWeight: FontWeight.bold,
-                      color: Colors.lightBlueAccent,
+                      color: Colors.white,
                     ),
                   ),
                 ],
               ),
               circularStrokeCap: CircularStrokeCap.round,
-              progressColor: Colors.lightBlue,
-              backgroundColor: Colors.lightBlue.withOpacity(0.1),
+              progressColor: Colors.blueAccent,
+              backgroundColor: Colors.blueAccent.withOpacity(0.1),
             ),
 
-            const Spacer(),
-
+            const SizedBox(
+              height: 40,
+            ), // Hata veren Spacer() yerine sabit boşluk
             // Alt Kısım: Su Durumu ve Program Butonları
             Row(
               children: [
@@ -129,7 +137,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: _buildActionCard(
                     context,
                     title: "Su Durumu",
-                    subtitle: "0 / 2500 ml",
+                    subtitle: "1250 / 2500 ml",
                     icon: Icons.water_drop,
                     color: Colors.lightBlue,
                     onTap: () {
@@ -144,7 +152,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     title: "Program",
                     subtitle: "Hafta Sonu",
                     icon: Icons.calendar_month,
-                    color: Colors.lightBlue,
+                    color: Colors.indigo,
                     onTap: () {
                       // Program ayarlama ekranına yönlendirme
                     },
@@ -173,9 +181,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: const Color(0xff1C2541), // Karanlık tema kart rengi
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withOpacity(0.3)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(
+                0.2,
+              ), // Gölgeleri siyah tonuna çektik
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,7 +210,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+              style: const TextStyle(color: Colors.white60, fontSize: 13),
             ),
           ],
         ),

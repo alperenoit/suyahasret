@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:suyahasret/features/home/home_screen.dart';
 import 'package:suyahasret/features/water/water_screen.dart';
+import 'package:suyahasret/features/schedule/schedule_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -15,8 +16,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   // Sırasıyla sekmelerimizi listeliyoruz
   final List<Widget> _screens = [
     const HomeScreen(),
-    const WaterScreen(), // Geçici Su Ekranı
-    // const PlaceholderScheduleScreen(), // Geçici Program Ekranı
+    const WaterScreen(),
+    const ScheduleScreen(),
   ];
 
   @override
